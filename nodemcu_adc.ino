@@ -30,11 +30,11 @@ DynamicJsonDocument doc(8192);
 JsonArray data = doc.to<JsonArray>();
 
 void setup() {
-  // Serial.begin(115200);
+  Serial.begin(115200);
   Wire.begin();
 
   if (!bme.begin(0x76)) {
-    // Serial.println("Could not find a valid BME280 sensor, check wiring!");
+    Serial.println("Could not find a valid BME280 sensor, check wiring!");
     while (1);
   }
 
@@ -49,15 +49,15 @@ void setup() {
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    // Serial.println("Connecting to WiFi...");
+    Serial.println("Connecting to WiFi...");
   }
-  // Serial.println("Connected to WiFi");
+  Serial.println("Connected to WiFi");
 
   client.setInsecure();
 
   const int httpPort = 443;
   if (!client.connect(host, httpPort)) {
-    // Serial.println("connection failed");
+    Serial.println("connection failed");
     return;
   }
 }
@@ -98,7 +98,7 @@ void loop() {
   display.println(" %");
   display.display();
 
-  if (second == 60) {
+  if (second == 15) { // Save every 15 seconds
     JsonObject reading = data.createNestedObject();
     reading["LA"] = round(SPL/60*10)/10;
     reading["Temperature"] = round(temperature/60*10)/10;
@@ -112,7 +112,7 @@ void loop() {
     humidity = 0;
   }
 
-  if (minute == 5) {
+  if (minute == 60) { // Send every 15 minutes (save 4 times per minute => 4*15min = 60)
     sendJSONtoServer();
     doc.clear();
     data = doc.to<JsonArray>();
@@ -132,17 +132,17 @@ void sendJSONtoServer() {
 
     String jsonString;
     serializeJson(doc, jsonString); //Convert JSON document to string
-    // Serial.println(jsonString);
+    Serial.println(jsonString);
     int httpResponseCode = http.POST(jsonString); // Send the POST request
 
     if (httpResponseCode>0) {
       String response = http.getString(); // Get the response
-      // Serial.println(httpResponseCode);
-      // Serial.println(response);
+      Serial.println(httpResponseCode);
+      Serial.println(response);
     }
     else {
-      // Serial.print("Error on sending POST: ");
-      // Serial.println(http.errorToString(httpResponseCode).c_str());
+      Serial.print("Error on sending POST: ");
+      Serial.println(http.errorToString(httpResponseCode).c_str());
     }
     http.end();
   }

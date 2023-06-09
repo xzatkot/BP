@@ -13,11 +13,11 @@ float values[FAST];
 float final = 0;
 
 void setup() {
-  // Serial.begin(9600);
+  Serial.begin(9600);
 
-  // while (!Serial) { ; }
+  while (!Serial) { ; }
   if (!I2S.begin(I2S_PHILIPS_MODE, SAMPLING_FREQ, 32)) {
-  //   Serial.println("Failed to initialize I2S!");
+    Serial.println("Failed to initialize I2S!");
     while (1) ;
   }
 }
